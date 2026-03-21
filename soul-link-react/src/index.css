@@ -1,0 +1,162 @@
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.composer h2 {
+  font-size: 1rem;
+}
+
+.composer textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #3a3e63;
+  background: #1d2038;
+  color: white;
+  resize: vertical;
+  font: inherit;
+}
+
+.composer button {
+  align-self: flex-end;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #8b5cf6;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#feedList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.moment-card {
+  width: 100%;
+  background: #2a2d4a;
+  border: 1px solid #3a3e63;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.moment-card h3 {
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+
+.moment-card p {
+  font-size: 0.95rem;
+  color: #d9dcf5;
+}
+
+.moment-card button {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+}
+
+.action-button {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 76px;
+  width: 58px;
+  height: 58px;
+  border: none;
+  border-radius: 50%;
+  background: #8b5cf6;
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  z-index: 30;
+}
+
+.action-menu {
+  position: fixed;
+  bottom: 145px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #1d2038;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #3a3e63;
+  z-index: 40;
+}
+
+.action-menu button {
+  background: #2a2d4a;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 500px;
+  background: #1d2038;
+  border: 1px solid #3a3e63;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.modal-card h2 {
+  margin-bottom: 12px;
+}
+
+.modal-card textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #3a3e63;
+  background: #111427;
+  color: white;
+  resize: vertical;
+  font: inherit;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.modal-actions button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #8b5cf6;
+  color: white;
+}
