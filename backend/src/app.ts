@@ -7,6 +7,7 @@ import momentRoutes from "./routes/momentRoutes";
 import soulLinkRoutes from "./routes/soulLinkRoutes";
 import conversationRoutes from "./routes/conversationRoutes";
 import messageRoutes from "./routes/messageRoutes";
+import authRoutes from "./routes/authRoutes";
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.get("/", (_req, res) => {
 });
 
     // resource routes
+    app.use("/api/auth", authRoutes)
     app.use("/api/personas", personaRoutes);
     app.use("/api/moments", momentRoutes);
     app.use("/api/soul-links", soulLinkRoutes);

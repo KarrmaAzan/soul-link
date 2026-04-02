@@ -1,46 +1,148 @@
 import { Router } from "express";
 import { query } from "../lib/query";
+import {
+  requireAuth,
+  type AuthenticatedRequest,
+} from "../middleware/requireAuth";
 
 const router = Router();
 
-// GET /api/messages/conversation/:id
-router.get("/conversation/:id", async (req, res) => {
-  const { id } = req.params;
+// GET /api/messages/:conversationId?personaId=123
+router.get("/:conversationId", requireAuth, async (req: AuthenticatedRequest, res) => {
+  const userId = req.user?.userId;
+  const conversationId = Number(req.params.conversationId);
+  const personaId = Number(req.query.personaId);
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (!Number.isInteger(conversationId) || conversationId <= 0) {
+    return res.status(400).json({ message: "Invalid conversation id" });
+  }
+
+  if (!Number.isInteger(personaId) || personaId <= 0) {
+    return res.status(400).json({ message: "Valid personaId is required" });
+  }
 
   try {
+    const personaCheck = await query(
+      `
+      SELECT id
+      FROM personas
+      WHERE id = $1 AND user_id = $2
+      LIMIT 1
+      `,
+      [personaId, userId]
+    );
+
+    if (personaCheck.rows.length === 0) {
+      return res.status(403).json({
+        message: "Forbidden: persona does not belong to this user",
+      });
+    }
+
+    const accessCheck = await query(
+      `
+      SELECT id
+      FROM conversations
+      WHERE id = $1
+        AND (persona_one_id = $2 OR persona_two_id = $2)
+      LIMIT 1
+      `,
+      [conversationId, personaId]
+    );
+
+    if (accessCheck.rows.length === 0) {
+      return res.status(403).json({
+        message: "Forbidden: this persona does not belong to this conversation",
+      });
+    }
+
     const result = await query(
       `
       SELECT
-        id,
-        conversation_id AS "conversationId",
-        sender_persona_id AS "senderPersonaId",
-        text,
-        created_at AS "createdAt"
-      FROM messages
-      WHERE conversation_id = $1
-      ORDER BY created_at ASC
+        m.id,
+        m.conversation_id AS "conversationId",
+        m.sender_persona_id AS "senderPersonaId",
+        m.text,
+        m.created_at AS "createdAt"
+      FROM messages m
+      WHERE m.conversation_id = $1
+      ORDER BY m.created_at ASC
       `,
-      [id]
+      [conversationId]
     );
 
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error("Error fetching messages:", error);
-    res.status(500).json({ message: "Failed to fetch messages" });
+    return res.status(500).json({ message: "Failed to fetch messages" });
   }
 });
 
 // POST /api/messages
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req: AuthenticatedRequest, res) => {
+  const userId = req.user?.userId;
   const { conversationId, senderPersonaId, text } = req.body;
 
-  if (!conversationId || !senderPersonaId || !text) {
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (!conversationId || !senderPersonaId || !text?.trim()) {
     return res.status(400).json({
       message: "conversationId, senderPersonaId, and text are required",
     });
   }
 
   try {
+    const senderPersonaCheck = await query(
+      `
+      SELECT id
+      FROM personas
+      WHERE id = $1
+        AND user_id = $2
+      LIMIT 1
+      `,
+      [senderPersonaId, userId]
+    );
+
+    if (senderPersonaCheck.rows.length === 0) {
+      return res.status(403).json({
+        message: "Forbidden: sender persona does not belong to this user",
+      });
+    }
+
+    const conversationResult = await query(
+      `
+      SELECT
+        id,
+        persona_one_id,
+        persona_two_id
+      FROM conversations
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [conversationId]
+    );
+
+    if (conversationResult.rows.length === 0) {
+      return res.status(404).json({ message: "Conversation not found" });
+    }
+
+    const conversation = conversationResult.rows[0];
+
+    const senderIsParticipant =
+      Number(conversation.persona_one_id) === Number(senderPersonaId) ||
+      Number(conversation.persona_two_id) === Number(senderPersonaId);
+
+    if (!senderIsParticipant) {
+      return res.status(403).json({
+        message: "Forbidden: sender persona is not part of this conversation",
+      });
+    }
+
     const messageResult = await query(
       `
       INSERT INTO messages (
@@ -56,7 +158,7 @@ router.post("/", async (req, res) => {
         text,
         created_at AS "createdAt"
       `,
-      [conversationId, senderPersonaId, text]
+      [conversationId, senderPersonaId, text.trim()]
     );
 
     await query(
@@ -66,10 +168,10 @@ router.post("/", async (req, res) => {
           updated_at = NOW()
       WHERE id = $2
       `,
-      [text, conversationId]
+      [text.trim(), conversationId]
     );
 
-    res.status(201).json(messageResult.rows[0]);
+    return res.status(201).json(messageResult.rows[0]);
   } catch (error: any) {
     console.error("Error creating message:", error);
 
@@ -79,7 +181,7 @@ router.post("/", async (req, res) => {
       });
     }
 
-    res.status(500).json({ message: "Failed to create message" });
+    return res.status(500).json({ message: "Failed to create message" });
   }
 });
 

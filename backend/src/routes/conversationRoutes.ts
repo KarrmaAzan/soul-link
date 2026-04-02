@@ -1,33 +1,72 @@
 import { Router } from "express";
 import { query } from "../lib/query";
+import {
+  requireAuth,
+  type AuthenticatedRequest,
+} from "../middleware/requireAuth";
 
 const router = Router();
 
-// GET /api/conversations
-router.get("/", async (_req, res) => {
+// GET /api/conversations?personaId=123
+router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
+    const userId = req.user?.userId;
+    const personaId = Number(req.query.personaId);
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (!Number.isInteger(personaId) || personaId <= 0) {
+      return res.status(400).json({ message: "Valid personaId is required" });
+    }
+
+    const personaCheck = await query(
+      `
+      SELECT id
+      FROM personas
+      WHERE id = $1 AND user_id = $2
+      LIMIT 1
+      `,
+      [personaId, userId]
+    );
+
+    if (personaCheck.rows.length === 0) {
+      return res.status(403).json({
+        message: "Forbidden: persona does not belong to this user",
+      });
+    }
+
     const result = await query(
       `
       SELECT
-        id,
-        ARRAY[persona_one_id, persona_two_id] AS "participantIds",
-        last_message AS "lastMessage",
-        updated_at AS "updatedAt"
-      FROM conversations
-      ORDER BY updated_at DESC
-      `
+        c.id,
+        ARRAY[c.persona_one_id, c.persona_two_id] AS "participantIds",
+        c.last_message AS "lastMessage",
+        c.updated_at AS "updatedAt"
+      FROM conversations c
+      WHERE c.persona_one_id = $1
+         OR c.persona_two_id = $1
+      ORDER BY c.updated_at DESC
+      `,
+      [personaId]
     );
 
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error("Error fetching conversations:", error);
-    res.status(500).json({ message: "Failed to fetch conversations" });
+    return res.status(500).json({ message: "Failed to fetch conversations" });
   }
 });
 
 // POST /api/conversations
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req: AuthenticatedRequest, res) => {
+  const userId = req.user?.userId;
   const { participantIds, lastMessage } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
   if (!participantIds || !Array.isArray(participantIds) || participantIds.length !== 2) {
     return res.status(400).json({
@@ -35,7 +74,15 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const [firstId, secondId] = participantIds;
+  const [firstIdRaw, secondIdRaw] = participantIds;
+  const firstId = Number(firstIdRaw);
+  const secondId = Number(secondIdRaw);
+
+  if (!Number.isInteger(firstId) || !Number.isInteger(secondId)) {
+    return res.status(400).json({
+      message: "participantIds must contain valid numeric persona IDs",
+    });
+  }
 
   if (firstId === secondId) {
     return res.status(400).json({
@@ -47,6 +94,57 @@ router.post("/", async (req, res) => {
   const personaTwoId = Math.max(firstId, secondId);
 
   try {
+    const ownershipCheck = await query(
+      `
+      SELECT id
+      FROM personas
+      WHERE id = $1
+        AND user_id = $2
+      LIMIT 1
+      `,
+      [firstId, userId]
+    );
+
+    if (ownershipCheck.rows.length === 0) {
+      return res.status(403).json({
+        message: "Forbidden: initiating persona does not belong to this user",
+      });
+    }
+
+    const personaExistenceCheck = await query(
+      `
+      SELECT id
+      FROM personas
+      WHERE id IN ($1, $2)
+      `,
+      [personaOneId, personaTwoId]
+    );
+
+    if (personaExistenceCheck.rows.length !== 2) {
+      return res.status(400).json({
+        message: "One or both personas do not exist",
+      });
+    }
+
+    const existing = await query(
+      `
+      SELECT
+        id,
+        ARRAY[persona_one_id, persona_two_id] AS "participantIds",
+        last_message AS "lastMessage",
+        updated_at AS "updatedAt"
+      FROM conversations
+      WHERE persona_one_id = $1
+        AND persona_two_id = $2
+      LIMIT 1
+      `,
+      [personaOneId, personaTwoId]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.json(existing.rows[0]);
+    }
+
     const result = await query(
       `
       INSERT INTO conversations (
@@ -65,7 +163,7 @@ router.post("/", async (req, res) => {
       [personaOneId, personaTwoId, lastMessage ?? ""]
     );
 
-    res.status(201).json(result.rows[0]);
+    return res.status(201).json(result.rows[0]);
   } catch (error: any) {
     console.error("Error creating conversation:", error);
 
@@ -81,7 +179,7 @@ router.post("/", async (req, res) => {
       });
     }
 
-    res.status(500).json({ message: "Failed to create conversation" });
+    return res.status(500).json({ message: "Failed to create conversation" });
   }
 });
 
