@@ -3,56 +3,55 @@ import pg from "pg";
 
 const { Pool } = pg;
 
-const host = process.env.PGHOST || "db";
-const port = Number(process.env.PGPORT) || 5432;
-const database = process.env.PGDATABASE || "soul_link";
-const user = process.env.PGUSER || "postgres";
-const password = process.env.PGPASSWORD || "postgres";
+function createPool() {
+  if (process.env.DATABASE_URL) {
+    return new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl:
+        process.env.NODE_ENV === "production"
+          ? { rejectUnauthorized: false }
+          : false,
+    });
+  }
 
-export const pool = new Pool({
-  host,
-  port,
-  database,
-  user,
-  password,
-});
+  const host = process.env.PGHOST || "localhost";
+  const port = Number(process.env.PGPORT) || 5432;
+  const database = process.env.PGDATABASE || "soul_link";
+  const user = process.env.PGUSER || "postgres";
+  const password = process.env.PGPASSWORD || "postgres";
 
-console.log("PG CONNECTION:", {
-  host,
-  port,
-  database,
-  user,
-});
-
-pool
-  .query(`SELECT current_database() AS db, current_schema() AS schema`)
-  .then((result) => {
-    console.log("POOL DB CHECK:", result.rows[0]);
-  })
-  .catch((err) => {
-    console.error("POOL DB CHECK FAILED:", err);
+  console.log("PG CONNECTION:", {
+    host,
+    port,
+    database,
+    user,
   });
 
-pool
-  .query(`
-    SELECT table_schema, table_name
-    FROM information_schema.tables
-    WHERE table_name = 'users'
-  `)
-  .then((result) => {
-    console.log("POOL USERS CHECK:", result.rows);
-  })
-  .catch((err) => {
-    console.error("POOL USERS CHECK FAILED:", err);
+  return new Pool({
+    host,
+    port,
+    database,
+    user,
+    password,
+    ssl: false,
   });
+}
+
+export const pool = createPool();
 
 export const connectDB = async () => {
-  let retries = 10;
+  let retries = process.env.NODE_ENV === "production" ? 3 : 10;
 
   while (retries > 0) {
     try {
       const client = await pool.connect();
-      console.log("PostgreSQL connected");
+
+      const result = await client.query(
+        `SELECT current_database() AS db, current_schema() AS schema`
+      );
+
+      console.log("PostgreSQL connected:", result.rows[0]);
+
       client.release();
       return;
     } catch (error) {
@@ -61,7 +60,7 @@ export const connectDB = async () => {
 
       if (retries === 0) {
         console.error("Could not connect to PostgreSQL after retries.");
-        process.exit(1);
+        throw error;
       }
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
