@@ -1,130 +1,109 @@
 # Soul Link
 
-Soul Link is a full-stack social media application built with React, TypeScript, Node.js, Express, and PostgreSQL.
+## 🚀 Demo Flow
 
-It features a persona-based identity system, social posting, relationship mechanics, and messaging — all backed by a relational database.
+To experience Soul Link as intended:
 
-## Features
+1. **Register a new account**
+2. **Create your first Persona**
+3. **Enter the Home feed**
 
-- Persona-based identity system
-- Moments (social posts)
-- Soul Links (custom relationship system)
-- Conversations and messaging
-- Persistent PostgreSQL database
-- Seeded demo data
+   * You should see an **empty feed**
+4. **Create a Moment**
+5. **Create a second Persona**
+6. **Switch Personas (Sanctum)**
 
-## Tech Stack
+   * Notice:
 
-Frontend:
-- React
-- TypeScript
+     * Each persona has its **own isolated feed**
+     * No data is shared between personas
+7. **Navigate through:**
 
-Backend:
-- Node.js
-- Express
+   * Home (Moments)
+   * Inbox (Conversations)
+   * World (Discovery)
+   * Sanctum (Persona switching)
 
-Database:
-- PostgreSQL
-- pg (node-postgres)
+### 🔐 Key Behavior
 
-## API Routes
+* Data is **scoped per user AND per persona**
+* New users start with **zero data**
+* No global/shared database leakage
 
-Personas:
-- GET /api/personas
-- POST /api/personas
+This demonstrates true multi-identity architecture.
 
-Moments:
-- GET /api/moments
-- POST /api/moments
 
-Soul Links:
-- GET /api/soul-links
-- POST /api/soul-links
-- PATCH /api/soul-links/:id/accept
+## 🌓 The Idea Behind Soul Link
 
-Conversations:
-- GET /api/conversations
-- POST /api/conversations
+Soul Link was created to explore a simple truth:
 
-Messages:
-- GET /api/messages/conversation/:id
-- POST /api/messages
+**You are always wearing a mask.**
 
-## Database Design
+But instead of hiding that, Soul Link makes it intentional.
 
-The app uses a relational schema with:
+Each persona represents a real side of you:
 
-- personas
-- moments
-- soul_links
-- conversations
-- messages
+* your interests
+* your emotions
+* your contradictions
+* your growth
 
-Key decisions:
-- Foreign key relationships between entities
-- Unique indexes to prevent duplicate relationships
-- Check constraints for valid states
-- Timestamps for sorting and activity
+You are not one identity — you are many.
 
-## Local Setup
+Soul Link gives you control over:
 
-1. Clone the repository
+* who sees you
+* how they see you
+* which version of you they experience
 
-git clone https://github.com/YOUR_USERNAME/soul-link.git  
-cd soul-link
+---
 
-2. Backend setup
+## 🔐 Control & Authenticity
 
-cd backend  
-npm install
+You choose:
 
-3. Database setup
+* which persona you show
+* who has access to it
+* how you express yourself within it
 
-Make sure PostgreSQL is running and create the database if needed:
+Nothing is forced. Nothing is exposed without intention.
 
-CREATE DATABASE soul_link;
+---
 
-4. Run schema
+## ⚡ The Paradox
 
-psql -U postgres -d soul_link -f schema.sql
+The system is built on a contradiction:
 
-5. Create environment variables
+You are wearing a mask —
+but the goal is to **be real within it**.
 
-Create a `.env` file inside `/backend`:
+Those who try to perform will fragment.
 
-PORT=4000  
-PGHOST=localhost  
-PGPORT=5432  
-PGDATABASE=soul_link  
-PGUSER=postgres  
-PGPASSWORD=your_password  
+Those who are truly themselves will:
 
-6. Start backend
+* resonate
+* connect
+* thrive
 
-npm run dev
+---
 
-7. Seed demo data
+## 🧬 What Soul Link Actually Is
 
-npm run seed
+Soul Link is not just a social platform.
 
-## What I Built
+It is:
 
-- Full-stack architecture (React + Express + PostgreSQL)
-- REST API design
-- Relational database modeling
-- SQL integration using pg
-- Data integrity with constraints and indexes
-- Seeded development environment
+* a system of identity
+* a controlled social environment
+* an experiment in authenticity
 
-## Notes
+---
 
-- Conversations are stored as unique persona pairs
-- Messaging updates conversation state (last message + timestamp)
-- Database prevents duplicate relationships
+## 🌐 Why It Exists
 
-## Future Improvements
+Most platforms collapse identity into one version of yourself.
 
-- Authentication (JWT)
-- Real-time messaging
-- Pagination and filtering
-- Deployment
+Soul Link expands it.
+
+Because real people are not one thing —
+they are many.
