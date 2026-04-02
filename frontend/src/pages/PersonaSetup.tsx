@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
-import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 import { getMe } from "../api/authApi";
+import { createPersona } from "../api/personaApi";
 
 export default function PersonaSetup() {
   const navigate = useNavigate();
@@ -32,25 +32,16 @@ export default function PersonaSetup() {
     try {
       setError("");
 
-      await axios.post(
-        "http://localhost:4000/api/personas",
-        {
-          name: name.trim(),
-          niche: niche.trim(),
-          bio: bio.trim(),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await createPersona(token, {
+        name: name.trim(),
+        niche: niche.trim(),
+        bio: bio.trim(),
+      });
 
       const me = await getMe(token);
       setAuth(token, me);
 
       const personaCount = me.personas?.length ?? 0;
-
       navigate(personaCount > 1 ? "/sanctum" : "/", { replace: true });
     } catch (err) {
       setError("Failed to create persona");
