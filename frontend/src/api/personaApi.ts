@@ -1,7 +1,8 @@
 import axios from "axios";
 import type { Persona } from "../types/models";
+import { API_BASE_URL } from "../lib/api";
 
-const API_BASE_URL = "http://localhost:4000/api/personas";
+const API_URL = `${API_BASE_URL}/personas`;
 
 function authHeaders(token: string) {
   return {
@@ -12,7 +13,7 @@ function authHeaders(token: string) {
 }
 
 export async function getMyPersonas(token: string): Promise<Persona[]> {
-  const response = await axios.get(`${API_BASE_URL}/me`, authHeaders(token));
+  const response = await axios.get(`${API_URL}/me`, authHeaders(token));
   return response.data;
 }
 
@@ -20,7 +21,7 @@ export async function discoverPersonas(
   token: string,
   search = ""
 ): Promise<Persona[]> {
-  const response = await axios.get(`${API_BASE_URL}/discover`, {
+  const response = await axios.get(`${API_URL}/discover`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -40,6 +41,6 @@ export async function createPersona(
     bio: string;
   }
 ): Promise<Persona> {
-  const response = await axios.post(API_BASE_URL, data, authHeaders(token));
+  const response = await axios.post(API_URL, data, authHeaders(token));
   return response.data;
 }

@@ -1,7 +1,8 @@
 import axios from "axios";
 import type { Message } from "../types/models";
+import { API_BASE_URL } from "../lib/api";
 
-const API_URL = "http://localhost:4000/api/messages";
+const API_URL = `${API_BASE_URL}/messages`;
 
 function authHeaders(token: string) {
   return {

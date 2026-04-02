@@ -41,7 +41,7 @@ function Layout() {
 
   const [moments, setMoments] = useState<Moment[]>([]);
   const [momentInput, setMomentInput] = useState<string>("");
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [, setMenuOpen] = useState<boolean>(false);
   const [momentModalOpen, setMomentModalOpen] = useState<boolean>(false);
 
   const [activePersonaId, setActivePersonaId] = useState<number | null>(null);

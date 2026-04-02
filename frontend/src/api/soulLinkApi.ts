@@ -1,7 +1,8 @@
 import axios from "axios";
 import type { SoulLink } from "../types/models";
+import { API_BASE_URL } from "../lib/api";
 
-const API_URL = "http://localhost:4000/api/soul-links";
+const API_URL = `${API_BASE_URL}/soul-links`;
 
 function authHeaders(token: string) {
   return {
@@ -11,7 +12,10 @@ function authHeaders(token: string) {
   };
 }
 
-export async function getSoulLinks(token: string, personaId: number): Promise<SoulLink[]> {
+export async function getSoulLinks(
+  token: string,
+  personaId: number
+): Promise<SoulLink[]> {
   const res = await axios.get(API_URL, {
     ...authHeaders(token),
     params: { personaId },

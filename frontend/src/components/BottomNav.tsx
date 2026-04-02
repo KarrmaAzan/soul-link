@@ -8,7 +8,7 @@ import AddPhotoAlternateOutlinedIcon from "@mui/icons-material/AddPhotoAlternate
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 import RadioButtonCheckedRoundedIcon from "@mui/icons-material/RadioButtonCheckedRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { useLocation, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 
 type BottomNavProps = {
   onCreateMoment: () => void;
@@ -118,7 +118,6 @@ function BottomNav({
   onGoLive,
 }: BottomNavProps) {
   const navigate = useNavigate();
-  const location = useLocation();
   const [open, setOpen] = useState(false);
 
   const actions: WheelAction[] = useMemo(

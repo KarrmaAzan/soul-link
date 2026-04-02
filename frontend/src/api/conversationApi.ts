@@ -1,7 +1,8 @@
 import axios from "axios";
 import type { Conversation } from "../types/models";
+import { API_BASE_URL } from "../lib/api";
 
-const API_URL = "http://localhost:4000/api/conversations";
+const API_URL = `${API_BASE_URL}/conversations`;
 
 function authHeaders(token: string) {
   return {
