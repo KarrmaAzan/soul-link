@@ -1,109 +1,56 @@
 # Soul Link
 
-## 🚀 Demo Flow
-
-To experience Soul Link as intended:
-
-1. **Register a new account**
-2. **Create your first Persona**
-3. **Enter the Home feed**
-
-   * You should see an **empty feed**
-4. **Create a Moment**
-5. **Create a second Persona**
-6. **Switch Personas (Sanctum)**
-
-   * Notice:
-
-     * Each persona has its **own isolated feed**
-     * No data is shared between personas
-7. **Navigate through:**
-
-   * Home (Moments)
-   * Inbox (Conversations)
-   * World (Discovery)
-   * Sanctum (Persona switching)
-
-### 🔐 Key Behavior
-
-* Data is **scoped per user AND per persona**
-* New users start with **zero data**
-* No global/shared database leakage
-
-This demonstrates true multi-identity architecture.
-
-
-## 🌓 The Idea Behind Soul Link
-
-Soul Link was created to explore a simple truth:
-
-**You are always wearing a mask.**
-
-But instead of hiding that, Soul Link makes it intentional.
-
-Each persona represents a real side of you:
-
-* your interests
-* your emotions
-* your contradictions
-* your growth
-
-You are not one identity — you are many.
-
-Soul Link gives you control over:
-
-* who sees you
-* how they see you
-* which version of you they experience
+A mobile-first social platform built around identity, connection, and multi-persona expression.
 
 ---
 
-## 🔐 Control & Authenticity
+## Overview
+Soul Link is designed to move beyond traditional social media by allowing users to operate through multiple personas.
 
-You choose:
-
-* which persona you show
-* who has access to it
-* how you express yourself within it
-
-Nothing is forced. Nothing is exposed without intention.
+Each persona represents a different side of the user, with control over visibility, interaction, and connection.
 
 ---
 
-## ⚡ The Paradox
-
-The system is built on a contradiction:
-
-You are wearing a mask —
-but the goal is to **be real within it**.
-
-Those who try to perform will fragment.
-
-Those who are truly themselves will:
-
-* resonate
-* connect
-* thrive
+## Core Features
+- Multi-persona profiles (up to 5 per user)
+- Persona-based visibility and interaction
+- Mobile-first social feed
+- Video-based "Moments" system
+- Niche-based networking ("Worlds")
+- Authentication & secure identity handling
 
 ---
 
-## 🧬 What Soul Link Actually Is
-
-Soul Link is not just a social platform.
-
-It is:
-
-* a system of identity
-* a controlled social environment
-* an experiment in authenticity
+## Tech Stack
+- React Native (Expo)
+- Node.js / Express
+- PostgreSQL
+- TypeScript
 
 ---
 
-## 🌐 Why It Exists
+## Architecture
+- Mobile-first frontend
+- RESTful API
+- Scalable backend structure
+- Persona-based data modeling
 
-Most platforms collapse identity into one version of yourself.
+---
 
-Soul Link expands it.
+## Status
+In active development.
 
-Because real people are not one thing —
-they are many.
+---
+
+## Roadmap
+- [ ] Persona system
+- [ ] Authentication
+- [ ] Feed & interactions
+- [ ] Matching / discovery system
+- [ ] Real-time features
+- [ ] Deployment
+
+---
+
+## Vision
+To redefine how identity and connection work in digital spaces.
