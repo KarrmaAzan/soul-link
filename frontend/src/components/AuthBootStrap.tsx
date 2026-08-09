@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { getMe } from "../api/authApi";
 import { useAuthStore } from "../store/authStore";
+import { DEMO_MODE } from "../demoData";
 
 type Props = {
   children: React.ReactNode;
@@ -14,11 +15,13 @@ export default function AuthBootstrap({ children }: Props) {
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
   useEffect(() => {
+    if (DEMO_MODE) return;
     hydrateFromStorage();
   }, [hydrateFromStorage]);
 
   useEffect(() => {
     async function boot() {
+      if (DEMO_MODE) return;
       if (!token) {
         setUser(null);
         return;

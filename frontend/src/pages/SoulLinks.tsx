@@ -1,175 +1,94 @@
 import { useState } from "react";
+import { Avatar, Box, Button, Card, Chip, InputAdornment, Stack, TextField, Typography } from "@mui/material";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import Diversity2RoundedIcon from "@mui/icons-material/Diversity2Rounded";
+import HourglassTopRoundedIcon from "@mui/icons-material/HourglassTopRounded";
 import type { Persona, SoulLink } from "../types/models";
 
 type SoulLinkProps = {
-    // persona currently active
-    activePersona: Persona | null
-
-    // All personas in the app so we can search/filter them
-    personas: Persona[];
-
-    // All soul link relationships
-    soulLinks: SoulLink[];
-
-    // handler to send a new soul link request
-    onSendSoulLinkRequest: (recipientId: number) => void;
-
-    // handler to accept pending requests
-    onAcceptSoulLinkRequest: (linkId: number) => void;
-
+  activePersona: Persona | null;
+  personas: Persona[];
+  soulLinks: SoulLink[];
+  onSendSoulLinkRequest: (recipientId: number) => void;
+  onAcceptSoulLinkRequest: (linkId: number) => void;
 };
 
-function SoulLinks({
-    activePersona,
-    personas,
-    soulLinks,
-    onSendSoulLinkRequest,
-    onAcceptSoulLinkRequest,
-}: SoulLinkProps) {
-    // local search state for filtering personas by name
-    const [searchTerm, setSearchTerm] = useState("");
+export default function SoulLinks({ activePersona, personas, soulLinks, onSendSoulLinkRequest, onAcceptSoulLinkRequest }: SoulLinkProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const searchablePersonas = activePersona ? personas.filter((persona) => persona.id !== activePersona.id) : [];
+  const query = searchTerm.trim().toLowerCase();
+  const filteredPersonas = searchablePersonas.filter((persona) => !query || `${persona.name} ${persona.niche} ${persona.bio}`.toLowerCase().includes(query));
+  const pendingRequests = activePersona ? soulLinks.filter((link) => link.recipientPersonaId === activePersona.id && link.status === "pending") : [];
+  const acceptedLinks = activePersona ? soulLinks.filter((link) => link.status === "accepted" && (link.requesterPersonaId === activePersona.id || link.recipientPersonaId === activePersona.id)) : [];
 
-    // if there is an active persona, do not show that persona in search results
-    const searchablePersonas = activePersona
-    ? personas.filter((persona) => persona.id !== activePersona.id)
-    : [];
+  function getOtherPersona(link: SoulLink) {
+    if (!activePersona) return null;
+    const id = link.requesterPersonaId === activePersona.id ? link.recipientPersonaId : link.requesterPersonaId;
+    return personas.find((persona) => persona.id === id) || null;
+  }
 
-    // simple local search: only keep personas whose names include the typed text
-    const filteredPersonas = searchablePersonas.filter((persona) => 
-    persona.name.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  function hasExistingSoulLink(targetId: number) {
+    if (!activePersona) return false;
+    return soulLinks.some((link) => (link.requesterPersonaId === activePersona.id && link.recipientPersonaId === targetId) || (link.requesterPersonaId === targetId && link.recipientPersonaId === activePersona.id));
+  }
 
-// pending requests sent to the active persona
-    const pendingRequests = activePersona ? soulLinks.filter((link) =>
-    link.recipientPersonaId === activePersona.id && link.status === "pending") : [];
+  if (!activePersona) {
+    return <Card sx={{ p: 5, textAlign: "center" }}><Typography variant="h4">Select a persona first</Typography><Typography color="text.secondary" sx={{ mt: 1 }}>Soul Links are always created from a specific identity.</Typography></Card>;
+  }
 
-    // accepted soul links involving active persona
-    const acceptedLinks = activePersona 
-       ? soulLinks.filter(
-        (link) =>
-        link.status === "accepted" && 
-        (link.requesterPersonaId === activePersona.id ||
-         link.recipientPersonaId === activePersona.id)
-      ) : [];
+  return (
+    <Stack spacing={{ xs: 3.5, md: 4.5 }}>
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr auto" }, alignItems: "end", gap: 2 }}>
+        <Box>
+          <Typography variant="overline" color="secondary.light">Intentional connections</Typography>
+          <Typography variant="h2">Soul Links</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 660 }}>Connect the people who belong in this persona’s world—without turning your relationships into a popularity contest.</Typography>
+        </Box>
+        <Chip avatar={<Avatar>{activePersona.name.charAt(0).toUpperCase()}</Avatar>} label={`Connecting as ${activePersona.name}`} variant="outlined" sx={{ px: .5, height: 44 }} />
+      </Box>
 
-
-      // Helper: given a soul link, get the "other" persona in that relationship
-
-      function getOtherPersonaName(link:SoulLink) {
-        if (!activePersona) return "Unknown";
-
-        const otherPersonaId = 
-        link.requesterPersonaId === activePersona.id
-        ? link.recipientPersonaId 
-        : link.requesterPersonaId;
-
-        const otherPersona = personas.find((persona) => persona.id === otherPersonaId);
-        return otherPersona ? otherPersona.name : "Unknown";
-      }
-
-      // Helper: check if the active persona already has any soul link relationship
-      // (pending or accepted) with the target persona
-      function hasExistingSoulLink(targetPersonaId: number) {
-        if (!activePersona) return false;
-
-        return soulLinks.some(
-            (link) => 
-            (link.requesterPersonaId === activePersona.id && 
-                link.recipientPersonaId === targetPersonaId) ||
-                (link.requesterPersonaId === targetPersonaId &&
-                    link.recipientPersonaId === activePersona.id
-                )
-        )
-      }
-
-      return (
-    <section>
-      <h2>Soul Links</h2>
-
-      {!activePersona ? (
-        <p>Select an active persona before managing Soul Links.</p>
-      ) : (
-        <>
-          <p>Managing links as: <strong>{activePersona.name}</strong></p>
-
-          {/* Simple local search */}
-          <div>
-            <h3>Find Personas</h3>
-
-            <input
-              type="text"
-              placeholder="Search personas by name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "minmax(0,1.35fr) minmax(310px,.65fr)" }, gap: 3 }}>
+        <Stack spacing={2.25}>
+          <TextField
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search by name, niche, or energy…"
+            fullWidth
+            InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon sx={{ color: "text.secondary" }} /></InputAdornment> }}
+          />
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2,minmax(0,1fr))" }, gap: 1.5 }}>
             {filteredPersonas.length === 0 ? (
-              <p>No personas match your search.</p>
-            ) : (
-              filteredPersonas.map((persona) => (
-                <div key={persona.id} style={{ marginBottom: "8px" }}>
-                  <p>
-                    <strong>{persona.name}</strong> — {persona.niche}
-                  </p>
+              <Card sx={{ gridColumn: "1/-1", p: 4, borderRadius: 3.5, textAlign: "center", borderStyle: "dashed" }}><Typography variant="h6">No new signals found</Typography><Typography variant="body2" color="text.secondary" sx={{ mt: .5 }}>Try another search or invite more people into your network.</Typography></Card>
+            ) : filteredPersonas.map((persona, index) => {
+              const linked = hasExistingSoulLink(persona.id);
+              const gradients = ["linear-gradient(145deg,#7659C9,#B85C7B)", "linear-gradient(145deg,#287C79,#6862CA)", "linear-gradient(145deg,#A15F75,#D08A6E)"];
+              return (
+                <Card key={persona.id} sx={{ p: 2.5, borderRadius: 3.5, transition: "180ms ease", "&:hover": { transform: "translateY(-2px)", borderColor: "rgba(169,139,255,.24)" } }}>
+                  <Stack spacing={2}>
+                    <Stack direction="row" spacing={1.5} alignItems="center"><Avatar sx={{ width: 48, height: 48, background: gradients[index % gradients.length], fontWeight: 750 }}>{persona.name.charAt(0).toUpperCase()}</Avatar><Box sx={{ minWidth: 0 }}><Typography variant="h6" noWrap>{persona.name}</Typography><Typography variant="caption" color="info.main">{persona.niche}</Typography></Box></Stack>
+                    <Typography variant="body2" color="text.secondary" sx={{ minHeight: 45 }}>{persona.bio || "A new presence in the Soul Link network."}</Typography>
+                    <Button variant={linked ? "outlined" : "contained"} startIcon={linked ? <CheckRoundedIcon /> : <PersonAddAlt1RoundedIcon />} disabled={linked} onClick={() => onSendSoulLinkRequest(persona.id)} fullWidth>{linked ? "Link in motion" : "Send Soul Link"}</Button>
+                  </Stack>
+                </Card>
+              );
+            })}
+          </Box>
+        </Stack>
 
-                  <button
-                    onClick={() => onSendSoulLinkRequest(persona.id)}
-                    disabled={hasExistingSoulLink(persona.id)}
-                  >
-                    {hasExistingSoulLink(persona.id)
-                      ? "Already Linked / Pending"
-                      : "Send Soul Link Request"}
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
+        <Stack spacing={2}>
+          <Card sx={{ p: 2.75, borderRadius: 3.5 }}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}><Box><Typography variant="overline" color="secondary.light">Awaiting you</Typography><Typography variant="h5">Requests</Typography></Box><Chip label={pendingRequests.length} size="small" color="secondary" /></Stack>
+            {pendingRequests.length === 0 ? <Stack alignItems="center" spacing={1} sx={{ py: 3, textAlign: "center" }}><HourglassTopRoundedIcon sx={{ color: "text.secondary" }} /><Typography variant="body2" color="text.secondary">No requests waiting right now.</Typography></Stack> : <Stack spacing={1.25}>{pendingRequests.map((link) => { const requester = personas.find((persona) => persona.id === link.requesterPersonaId); return <Box key={link.id} sx={{ p: 1.5, borderRadius: 2.5, background: "rgba(255,255,255,.025)", border: "1px solid rgba(235,229,255,.07)" }}><Stack direction="row" spacing={1.25} alignItems="center"><Avatar sx={{ width: 38, height: 38, fontSize: ".9rem" }}>{requester?.name.charAt(0).toUpperCase() || "?"}</Avatar><Box sx={{ flex: 1, minWidth: 0 }}><Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{requester?.name || "Unknown persona"}</Typography><Typography variant="caption" color="text.secondary">wants to connect</Typography></Box><Button size="small" onClick={() => onAcceptSoulLinkRequest(link.id)}>Accept</Button></Stack></Box>; })}</Stack>}
+          </Card>
 
-          {/* Pending requests */}
-          <div>
-            <h3>Pending Requests</h3>
-
-            {pendingRequests.length === 0 ? (
-              <p>No pending Soul Link requests.</p>
-            ) : (
-              pendingRequests.map((link) => {
-                const requester = personas.find(
-                  (persona) => persona.id === link.requesterPersonaId
-                );
-
-                return (
-                  <div key={link.id} style={{ marginBottom: "8px" }}>
-                    <p>
-                      <strong>{requester ? requester.name : "Unknown"}</strong> wants to Soul Link.
-                    </p>
-                    <button onClick={() => onAcceptSoulLinkRequest(link.id)}>
-                      Accept
-                    </button>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-
-3           {/* Accepted links */}
-          <div>
-            <h3>Accepted Soul Links</h3>
-
-            {acceptedLinks.length === 0 ? (
-              <p>No accepted Soul Links yet.</p>
-            ) : (
-              acceptedLinks.map((link) => (
-                <p key={link.id}>
-                  Linked with: <strong>{getOtherPersonaName(link)}</strong>
-                </p>
-              ))
-            )}
-          </div>
-        </>
-      )}
-    </section>
+          <Card sx={{ p: 2.75, borderRadius: 3.5, background: "linear-gradient(145deg,rgba(24,29,44,.96),rgba(13,15,28,.92))" }}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}><Box><Typography variant="overline" color="info.main">Your circle</Typography><Typography variant="h5">Connected</Typography></Box><Diversity2RoundedIcon sx={{ color: "info.main" }} /></Stack>
+            {acceptedLinks.length === 0 ? <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>No accepted links yet. The best circles begin small.</Typography> : <Stack spacing={1.1}>{acceptedLinks.map((link) => { const persona = getOtherPersona(link); return <Stack key={link.id} direction="row" spacing={1.25} alignItems="center" sx={{ py: .8 }}><Avatar sx={{ width: 39, height: 39, background: "linear-gradient(145deg,#287C79,#6862CA)", fontSize: ".9rem" }}>{persona?.name.charAt(0).toUpperCase() || "?"}</Avatar><Box sx={{ flex: 1, minWidth: 0 }}><Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{persona?.name || "Unknown persona"}</Typography><Typography variant="caption" color="text.secondary" noWrap>{persona?.niche || "Soul linked"}</Typography></Box><CheckRoundedIcon sx={{ color: "info.main", fontSize: 18 }} /></Stack>; })}</Stack>}
+          </Card>
+        </Stack>
+      </Box>
+    </Stack>
   );
 }
-
-export default SoulLinks;

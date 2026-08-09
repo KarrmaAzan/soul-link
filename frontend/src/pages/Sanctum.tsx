@@ -1,12 +1,9 @@
-import {
-  Box,
-  Button,
-  Card,
-  Chip,
-  Divider,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Avatar, Box, Button, Card, Chip, Divider, Stack, Typography } from "@mui/material";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import { useNavigate } from "react-router-dom";
 import type { Persona, Moment, SoulLink } from "../types/models";
 
 type SanctumProps = {
@@ -18,209 +15,110 @@ type SanctumProps = {
   onOpenSoulLinks: () => void;
 };
 
-function Sanctum({
-  activePersona,
-  moments,
-  personas,
-  soulLinks,
-  onSwitchPersona,
-  onOpenSoulLinks,
-}: SanctumProps) {
-  const personaMoments = activePersona
-    ? moments.filter((moment) => moment.personaId === activePersona.id)
-    : [];
-
+export default function Sanctum({ activePersona, moments, personas, soulLinks, onSwitchPersona, onOpenSoulLinks }: SanctumProps) {
+  const navigate = useNavigate();
+  const personaMoments = activePersona ? moments.filter((moment) => moment.personaId === activePersona.id) : [];
   const activeSoulLinks = activePersona
-    ? soulLinks.filter(
-        (link) =>
-          link.status === "accepted" &&
-          (link.requesterPersonaId === activePersona.id ||
-            link.recipientPersonaId === activePersona.id)
-      )
+    ? soulLinks.filter((link) => link.status === "accepted" && (link.requesterPersonaId === activePersona.id || link.recipientPersonaId === activePersona.id))
     : [];
 
   if (!activePersona) {
     return (
-      <Stack spacing={3}>
-        <Box>
-          <Typography variant="h4" gutterBottom>
-            Sanctum
-          </Typography>
-          <Typography color="text.secondary">
-            Create a persona to begin shaping your presence.
-          </Typography>
-        </Box>
-
-        <Card sx={{ p: 3 }}>
-          <Typography variant="body1" color="text.secondary">
-            No active persona selected yet.
-          </Typography>
-        </Card>
-      </Stack>
+      <Card sx={{ p: { xs: 4, md: 7 }, textAlign: "center", borderRadius: 4 }}>
+        <Typography variant="overline" color="primary.light">Sanctum</Typography>
+        <Typography variant="h3" sx={{ mt: 1 }}>Your inner space needs a voice.</Typography>
+        <Typography color="text.secondary" sx={{ mt: 1.5, mb: 3 }}>Create a persona to begin shaping your presence.</Typography>
+        <Button variant="contained" onClick={() => navigate("/persona-setup")}>Create a persona</Button>
+      </Card>
     );
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 3.5, md: 4.5 }}>
+      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "flex-end" }} spacing={2}>
+        <Box>
+          <Typography variant="overline" color="primary.light">Private identity space</Typography>
+          <Typography variant="h2">Your Sanctum</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>Shape the signal before you share it.</Typography>
+        </Box>
+        <Button variant="outlined" startIcon={<AddRoundedIcon />} onClick={() => navigate("/persona-setup")}>Create persona</Button>
+      </Stack>
+
+      <Card
+        sx={{
+          position: "relative",
+          overflow: "hidden",
+          borderRadius: 5,
+          p: { xs: 3, sm: 4.5, md: 5.5 },
+          background: "radial-gradient(circle at 80% 20%, rgba(255,119,147,.24), transparent 22rem), radial-gradient(circle at 18% 100%, rgba(111,232,198,.12), transparent 24rem), linear-gradient(135deg, rgba(29,24,58,.98), rgba(12,14,28,.96))",
+        }}
+      >
+        <Box aria-hidden="true" sx={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: "1px solid rgba(216,204,255,.15)", right: -55, top: -95, "&::after": { content: '""', position: "absolute", inset: "22%", borderRadius: "50%", border: "1px dashed rgba(255,255,255,.12)" } }} />
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 2.5, sm: 3.5 }} alignItems={{ sm: "center" }} sx={{ position: "relative" }}>
+          <Box sx={{ position: "relative", width: "fit-content" }}>
+            <Avatar sx={{ width: { xs: 84, sm: 104 }, height: { xs: 84, sm: 104 }, fontSize: { xs: "2rem", sm: "2.5rem" }, fontWeight: 760, background: "linear-gradient(145deg,#8062D7,#C66181)", border: "4px solid rgba(255,255,255,.1)", boxShadow: "0 0 0 8px rgba(169,139,255,.08), 0 18px 40px rgba(0,0,0,.28)" }}>
+              {activePersona.name.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box sx={{ position: "absolute", right: 0, bottom: 2, width: 21, height: 21, borderRadius: "50%", bgcolor: "info.main", border: "4px solid #18152f" }} />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Chip icon={<AutoAwesomeRoundedIcon />} label="Active persona" size="small" sx={{ mb: 1.5, background: "rgba(169,139,255,.13)", color: "primary.light" }} />
+            <Typography variant="h3">{activePersona.name}</Typography>
+            <Typography color="info.main" sx={{ mt: .65, fontWeight: 700 }}>{activePersona.niche}</Typography>
+            <Typography color="text.secondary" sx={{ mt: 1.5, maxWidth: 670 }}>{activePersona.bio || "This persona is still becoming. Add a bio when the words arrive."}</Typography>
+          </Box>
+        </Stack>
+
+        <Stack direction="row" spacing={{ xs: 3, sm: 6 }} sx={{ position: "relative", mt: 4, pt: 3, borderTop: "1px solid rgba(235,229,255,.1)" }}>
+          <Box><Typography variant="h4">{personaMoments.length}</Typography><Typography variant="caption" color="text.secondary">Moments</Typography></Box>
+          <Box component="button" onClick={onOpenSoulLinks} sx={{ p: 0, border: 0, color: "inherit", textAlign: "left", background: "transparent", cursor: "pointer" }}><Typography variant="h4">{activeSoulLinks.length}</Typography><Typography variant="caption" color="text.secondary">Soul Links</Typography></Box>
+          <Box><Typography variant="h4">{personas.length}</Typography><Typography variant="caption" color="text.secondary">Personas</Typography></Box>
+        </Stack>
+      </Card>
+
       <Box>
-        <Typography variant="h4" gutterBottom>
-          Sanctum
-        </Typography>
-        <Typography color="text.secondary">
-          Your active persona, presence, and moments.
-        </Typography>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 2 }}>
+          <Box><Typography variant="overline" color="secondary.light">Shift perspective</Typography><Typography variant="h4">Your personas</Typography></Box>
+          <Typography variant="body2" color="text.secondary">One account, many contexts</Typography>
+        </Stack>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0,1fr))", md: "repeat(3, minmax(0,1fr))" }, gap: 1.5 }}>
+          {personas.map((persona, index) => {
+            const active = persona.id === activePersona.id;
+            const colors = [["#7559C8", "#BE5D7C"], ["#277C78", "#6B65CC"], ["#9B5A7A", "#D28B70"]][index % 3];
+            return (
+              <Card
+                key={persona.id}
+                onClick={() => onSwitchPersona(persona.id)}
+                sx={{ p: 2.25, borderRadius: 3.5, cursor: active ? "default" : "pointer", borderColor: active ? "rgba(169,139,255,.42)" : undefined, background: active ? "linear-gradient(145deg,rgba(34,29,62,.96),rgba(16,17,32,.94))" : undefined, "&:hover": { borderColor: "rgba(169,139,255,.35)", transform: active ? "none" : "translateY(-2px)" }, transition: "180ms ease" }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <Avatar sx={{ background: `linear-gradient(145deg,${colors[0]},${colors[1]})`, fontWeight: 750 }}>{persona.name.charAt(0).toUpperCase()}</Avatar>
+                  <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontWeight: 750 }} noWrap>{persona.name}</Typography><Typography variant="caption" color="text.secondary" noWrap>{persona.niche}</Typography></Box>
+                  {active ? <CheckCircleRoundedIcon color="primary" fontSize="small" /> : <ArrowForwardRoundedIcon sx={{ color: "text.secondary", fontSize: 18 }} />}
+                </Stack>
+              </Card>
+            );
+          })}
+        </Box>
       </Box>
 
-      <Card sx={{ p: 3 }}>
-        <Stack spacing={3}>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Box
-              sx={{
-                width: 72,
-                height: 72,
-                borderRadius: "50%",
-                display: "grid",
-                placeItems: "center",
-                background:
-                  "linear-gradient(135deg, rgba(139,92,246,0.18) 0%, rgba(34,197,94,0.16) 100%)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                fontSize: "1.5rem",
-                fontWeight: 700,
-                color: "text.primary",
-              }}
-            >
-              {activePersona.name.charAt(0).toUpperCase()}
-            </Box>
-
-            <Box sx={{ minWidth: 0 }}>
-              <Typography variant="h5">{activePersona.name}</Typography>
-              <Typography color="primary.main" sx={{ fontWeight: 600 }}>
-                {activePersona.niche}
-              </Typography>
-              <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-                {activePersona.bio}
-              </Typography>
-            </Box>
-          </Stack>
-
-          <Divider />
-
-          <Stack direction="row" spacing={2}>
-            <Button
-              variant="text"
-              disableRipple
-              sx={{
-                flex: 1,
-                p: 0,
-                minWidth: 0,
-                justifyContent: "flex-start",
-                color: "text.primary",
-                "&:hover": { backgroundColor: "transparent" },
-              }}
-            >
-              <Stack spacing={0.25} alignItems="flex-start">
-                <Typography variant="h6">{personaMoments.length}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Moments
-                </Typography>
-              </Stack>
-            </Button>
-
-            <Button
-              variant="text"
-              onClick={onOpenSoulLinks}
-              sx={{
-                flex: 1,
-                p: 0,
-                minWidth: 0,
-                justifyContent: "flex-start",
-                color: "text.primary",
-              }}
-            >
-              <Stack spacing={0.25} alignItems="flex-start">
-                <Typography variant="h6">{activeSoulLinks.length}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Soul Links
-                </Typography>
-              </Stack>
-            </Button>
-          </Stack>
-        </Stack>
-      </Card>
-
-      <Card sx={{ p: 3 }}>
-        <Stack spacing={2}>
-          <Typography variant="h6">Switch Persona</Typography>
-
-          {personas.length === 0 ? (
-            <Typography color="text.secondary">
-              No personas created yet.
-            </Typography>
-          ) : (
-            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-              {personas.map((persona) => {
-                const isActive = activePersona.id === persona.id;
-
-                return (
-                  <Chip
-                    key={persona.id}
-                    label={isActive ? `${persona.name} • Active` : persona.name}
-                    onClick={() => onSwitchPersona(persona.id)}
-                    clickable={!isActive}
-                    color={isActive ? "primary" : "default"}
-                    variant={isActive ? "filled" : "outlined"}
-                    sx={{
-                      borderRadius: 999,
-                      px: 0.5,
-                    }}
-                  />
-                );
-              })}
-            </Stack>
-          )}
-        </Stack>
-      </Card>
-
-      <Stack spacing={2}>
-        <Typography variant="h6">Moments</Typography>
-
+      <Box>
+        <Typography variant="overline" color="info.main">From this identity</Typography>
+        <Typography variant="h4" sx={{ mb: 2 }}>Recent moments</Typography>
         {personaMoments.length === 0 ? (
-          <Card sx={{ p: 3 }}>
-            <Typography color="text.secondary">
-              This persona has not posted any moments yet.
-            </Typography>
-          </Card>
+          <Card sx={{ p: 3.5, borderRadius: 3.5, borderStyle: "dashed" }}><Typography color="text.secondary">This persona has not shared a moment yet.</Typography></Card>
         ) : (
-          personaMoments.map((moment) => (
-            <Card key={moment.id} sx={{ p: 2.5 }}>
-              <Stack spacing={1.5}>
-                <Typography variant="body1">{moment.text}</Typography>
-
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    {new Date(moment.createdAt).toLocaleString()}
-                  </Typography>
-
-                  <Stack direction="row" spacing={2}>
-                    <Typography variant="caption" color="text.secondary">
-                      {moment.likes} likes
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {moment.views} views
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </Stack>
-            </Card>
-          ))
+          <Stack spacing={1.25}>
+            {personaMoments.slice(0, 4).map((moment) => (
+              <Card key={moment.id} sx={{ p: 2.5, borderRadius: 3.5 }}>
+                <Typography>{moment.text}</Typography>
+                <Divider sx={{ my: 1.75 }} />
+                <Stack direction="row" justifyContent="space-between"><Typography variant="caption" color="text.secondary">{new Date(moment.createdAt).toLocaleDateString([], { dateStyle: "medium" })}</Typography><Typography variant="caption" color="text.secondary">{moment.likes} appreciations · {moment.views} views</Typography></Stack>
+              </Card>
+            ))}
+          </Stack>
         )}
-      </Stack>
+      </Box>
     </Stack>
   );
 }
-
-export default Sanctum;
