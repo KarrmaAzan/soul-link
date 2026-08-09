@@ -5,6 +5,12 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import App from "./App";
 import theme from "./theme/theme";
 import "./index.css";
+import { useAuthStore } from "./store/authStore";
+import { DEMO_MODE, demoUser } from "./demoData";
+
+if (DEMO_MODE) {
+  useAuthStore.getState().setAuth("soul-link-demo", demoUser);
+}
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

@@ -1,58 +1,78 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import { Alert, Button, Stack, TextField, Typography } from "@mui/material";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import { login, getMe } from "../api/authApi";
 import { useAuthStore } from "../store/authStore";
+import AuthShell from "../components/AuthShell";
 
 export default function Login() {
   const navigate = useNavigate();
-  const setAuth = useAuthStore((s) => s.setAuth);
-
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setError("");
-
+    setLoading(true);
     try {
       const auth = await login({ identifier, password });
       const me = await getMe(auth.token);
       setAuth(auth.token, me);
-
       navigate(me.hasPersona ? "/" : "/persona-setup", { replace: true });
-    } catch (err) {
-      setError("Login failed");
-      console.error(err);
+    } catch (requestError) {
+      console.error(requestError);
+      setError("We couldn't open your orbit. Check your details and try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "grid", placeItems: "center", p: 2 }}>
-      <Paper sx={{ p: 4, width: "100%", maxWidth: 420 }}>
-        <Stack spacing={2} component="form" onSubmit={handleSubmit}>
-          <Typography variant="h4">Login</Typography>
-          <TextField
-            label="Email or Username"
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            fullWidth
-          />
-          {error && <Typography color="error">{error}</Typography>}
-          <Button type="submit" variant="contained">Login</Button>
-          <Typography variant="body2">
-            No account? <Link to="/register">Register</Link>
-          </Typography>
-        </Stack>
-      </Paper>
-    </Box>
+    <AuthShell
+      eyebrow="Welcome back"
+      title="Return to your orbit."
+      copy="Your personas, moments, and private connections are waiting."
+    >
+      <Stack spacing={2.25} component="form" onSubmit={handleSubmit}>
+        <TextField
+          label="Email or username"
+          value={identifier}
+          onChange={(event) => setIdentifier(event.target.value)}
+          autoComplete="username"
+          required
+          fullWidth
+        />
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          autoComplete="current-password"
+          required
+          fullWidth
+        />
+        {error && <Alert severity="error" variant="outlined">{error}</Alert>}
+        <Button
+          type="submit"
+          variant="contained"
+          size="large"
+          endIcon={<ArrowForwardRoundedIcon />}
+          disabled={loading}
+          sx={{ mt: .5 }}
+        >
+          {loading ? "Entering…" : "Enter Soul Link"}
+        </Button>
+        <Typography variant="body2" color="text.secondary" textAlign="center">
+          New to the network?{" "}
+          <Link to="/register" style={{ color: "#C7B6FF", fontWeight: 700 }}>
+            Create your account
+          </Link>
+        </Typography>
+      </Stack>
+    </AuthShell>
   );
 }
